@@ -1,27 +1,38 @@
+import 'package:first_project/database/database_helper.dart';
 import 'package:flutter/material.dart';
+import 'package:sqflite/sqflite.dart';
+
+import '../models/note.dart';
 
 class NoteDetails extends StatefulWidget {
-  String _title;
+  final String _title;
+  final Note note;
 
-  NoteDetails(this._title, {super.key});
+  const NoteDetails(this._title, this.note, {super.key});
 
   @override
-  State<NoteDetails> createState() => _NoteDetailsState(_title);
+  State<NoteDetails> createState() => _NoteDetailsState(_title, note);
 }
 
 class _NoteDetailsState extends State<NoteDetails> {
-  static final _priorities = ["High", "Low"];
+  static const _priorities = ["High", "Low"];
   String appbarTitle;
-  String dropdownValue = _priorities[1];
+  late String dropdownValue;
   TextEditingController titleTextEditingController = TextEditingController();
   TextEditingController descriptionTextEditingController =
       TextEditingController();
 
-  _NoteDetailsState(this.appbarTitle);
+  DatabaseHelper? databaseHelper = DatabaseHelper.getInsatnce();
+  Note note;
+
+  _NoteDetailsState(this.appbarTitle, this.note);
 
   @override
   Widget build(BuildContext context) {
     TextStyle? textStyle = Theme.of(context).textTheme.titleMedium;
+    dropdownValue = _priorities[1];
+    titleTextEditingController.text = note.title;
+    descriptionTextEditingController.text = note.description;
 
     return Scaffold(
       appBar: AppBar(
@@ -38,10 +49,10 @@ class _NoteDetailsState extends State<NoteDetails> {
                       value: item, child: Text(item));
                 }).toList(),
                 style: textStyle,
-                value: dropdownValue,
+                value: convertPriorityToString(note.priority),
                 onChanged: (value) {
                   setState(() {
-                    dropdownValue = value!;
+                    convertPriorityFromString(value!);
                   });
                 },
               ),
@@ -53,6 +64,7 @@ class _NoteDetailsState extends State<NoteDetails> {
                 style: textStyle,
                 onChanged: (value) {
                   debugPrint(value);
+                  updateTitle(value);
                 },
                 decoration: InputDecoration(
                     labelText: 'Title',
@@ -68,6 +80,7 @@ class _NoteDetailsState extends State<NoteDetails> {
                 style: textStyle,
                 onChanged: (value) {
                   debugPrint(value);
+                  updateDescription(value);
                 },
                 decoration: InputDecoration(
                     labelText: 'Description',
@@ -83,8 +96,7 @@ class _NoteDetailsState extends State<NoteDetails> {
                   Expanded(
                       child: ElevatedButton(
                     onPressed: () {
-                      setState(() {});
-                    },
+                      },
                     child: const Text('Save'),
                   )),
                   Container(
@@ -105,5 +117,36 @@ class _NoteDetailsState extends State<NoteDetails> {
         ),
       ),
     );
+  }
+
+  void convertPriorityFromString(String value) {
+    switch (value) {
+      case "High":
+        note.priority = 1;
+        break;
+      case "Low":
+        note.priority = 2;
+        break;
+    }
+  }
+
+  String convertPriorityToString(int value) {
+    switch (value) {
+      case 1:
+        dropdownValue = _priorities[0];
+        break;
+      case 2:
+        dropdownValue = _priorities[1];
+        break;
+    }
+    return dropdownValue;
+  }
+
+  void updateTitle(String title) {
+    note.title = title;
+  }
+
+  void updateDescription(String description) {
+    note.description = description;
   }
 }

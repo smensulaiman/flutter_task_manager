@@ -10,6 +10,7 @@ void main(){
 
 void add(int x, int y, Function(int a, int b) function){
   function(x,y);
+
 }
 
 dynamic addNumbers(int a , int b){
@@ -27,7 +28,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.green
       ),
-      home: const NoteList(),
+      home: NoteList(),
     );
   }
 }

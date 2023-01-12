@@ -6,7 +6,7 @@ import 'package:sqflite/sqflite.dart';
 import '../models/note.dart';
 
 class DatabaseHelper {
-  static late DatabaseHelper _databaseHelper;
+  static DatabaseHelper? _databaseHelper;
   static late Database _database;
 
   String noteTable = 'note_table';
@@ -16,7 +16,7 @@ class DatabaseHelper {
   String colPriority = 'priority';
   String colDate = 'date';
 
-  factory DatabaseHelper() {
+  static DatabaseHelper? getInsatnce() {
     _databaseHelper ??= DatabaseHelper();
     return _databaseHelper;
   }
@@ -49,8 +49,49 @@ class DatabaseHelper {
 
   //Insert Note
   Future<int> insertNote(Note note) async {
+    print('insert note method called');
     Database database = await this.database;
     var results = await database.insert(noteTable, note.toMap());
     return results;
+  }
+
+  //Update Note
+  Future<int> updateNote(Note note) async {
+    Database database = await this.database;
+    var results = await database
+        .update(noteTable, note.toMap(), where: colId, whereArgs: [note.id]);
+    return results;
+  }
+
+  //Update Note
+  Future<int> deleteNote(Note note) async {
+    Database database = await this.database;
+    var results =
+        await database.delete(noteTable, where: colId, whereArgs: [note.id]);
+    return results;
+  }
+
+  //Get Count
+  Future<int?> getCount() async {
+    Database database = await this.database;
+    List<Map<String, dynamic>> results =
+        await database.rawQuery('SELECT COUNT (*) FROM $noteTable');
+    int? count = Sqflite.firstIntValue(results);
+    return count;
+  }
+
+  //Convert Map to Object
+
+  Future<List<Note>> getNoteList() async {
+    var noteMapList = await getAllNotesFromDatabase();
+    int count = noteMapList.length;
+
+    List<Note> noteList = <Note>[];
+
+    for (var value in noteMapList) {
+      noteList.add(Note.fromMapToObject(value));
+    }
+
+    return noteList;
   }
 }
